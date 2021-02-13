@@ -25,7 +25,7 @@
       <h1 data-i18n="title" data-i18n-options='{"defaultValue": "flowchart.js"}'></h1>
         <p data-i18n="description" data-i18n-options='{"defaultValue": "Draws simple SVG flow chart diagrams from textual representation of the diagram"}'></p>
 
-        <a href="https://github.com/adrai/flowchart.js">
+        <a href="https://github.com/chetabahana/flowchart">
           <img class="gh-forkme" src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub">
         </a>
 
@@ -120,6 +120,8 @@ para(path2, top)->op1</div>
                                   'fill': 'yellow'
                                 },
                                 'end':{
+                                  'font-color': 'red',
+                                  'element-color': 'green',
                                   'class': 'end-element'
                                 }
                               },
@@ -127,11 +129,11 @@ para(path2, top)->op1</div>
                               'flowstate' : {
                                 'past' : { 'fill' : '#CCCCCC', 'font-size' : 12},
                                 'current' : {'fill' : 'yellow', 'font-color' : 'red', 'font-weight' : 'bold'},
-                                'future' : { 'fill' : '#FFFF99'},
+                                'future' : { 'fill' : '#58C4A3', 'font-weight' : 'bold'},
                                 'request' : { 'fill' : 'blue'},
                                 'invalid': {'fill' : '#444444'},
-                                'approved' : { 'fill' : '#58C4A3', 'font-size' : 12, 'yes-text' : 'APPROVED', 'no-text' : 'n/a' },
-                                'rejected' : { 'fill' : '#C45879', 'font-size' : 12, 'yes-text' : 'n/a', 'no-text' : 'REJECTED' }
+                                'approved' : { 'fill' : '#58C4A3', 'font-size' : 12, 'yes-text' : 'DITERIMA', 'no-text' : 'DITOLAK' },
+                                'rejected' : { 'fill' : '#C45879', 'font-size' : 12, 'yes-text' : 'LULUS', 'no-text' : 'TIDAK LULUS' }
                               }
                             });
 &lt;/script&gt;
@@ -143,22 +145,23 @@ para(path2, top)->op1</div>
             <td style="vertical-align: top;">
             <h3 data-i18n="demo2" data-i18n-options='{"defaultValue": "Demo 2 with color coding (flowstate). Try editing me below"}'></h3>
             <div class="editor-wrapper">
-<div class="editor editor2">st=>start: Start|past:>http://www.google.com[blank]
-e=>end: End|future:>http://www.google.com
-op1=>operation: My Operation|past
-op2=>operation: Stuff|current
-sub1=>subroutine: My Subroutine|invalid
-cond=>condition: Yes
-or No?|approved:>http://www.google.com
-c2=>condition: Good idea|rejected
-io=>inputoutput: catch something...|future
-
-st->op1(right)->cond
-cond(yes, right)->c2
-cond(no)->sub1(left)->op1
-c2(yes)->io->e
-c2(no)->op2->e</div>
-           </div>
+<div class="editor editor2">st=>start: Get|past
+e=>end: Set|past
+op1=>operation: Input|future
+op2=>operation: Output|future
+sub1=>subroutine: Let Query|current
+sub2=>subroutine: Let Result|current
+uji1=>condition: Uji Query|rejected
+uji2=>condition: Uji Result|approved
+io1=>inputoutput: Fix Query|invalid
+io2=>parallel: Fix Result|invalid
+st->op1(right)->sub1
+sub1(right)->uji1(yes, right)->sub2
+uji1(no)->io1(left)->sub1
+sub2->uji2(yes, right)->op2
+uji2(no)->io2(path1, left)->io1
+io2(path2, right)->sub2
+op2->e</div>
            <!--   Theme:
             <select class="theme">
               <option value="simple">Simple</option>
@@ -290,45 +293,64 @@ cond(yes@translator)->subt->op->io->e</div>
     <script type="text/javascript">
 
       function setup_editor(div, nr) {
-
         var editor_div = div.find(".editor" + nr);
         var diagram_div = div.find(".diagram" + nr);
         var theme_div = div.find(".theme" + nr);
-
         // Setup the editor diagram
         var editor = ace.edit(editor_div.get(0));
         editor.setTheme("ace/theme/crimson_editor");
         editor.getSession().setMode("ace/mode/asciidoc");
         editor.getSession().on('change', _.debounce(on_change, 100));
-
         theme_div.change(on_change);
         on_change();
-
         function on_change() {
           try {
             var diagram = flowchart.parse(editor.getValue());
-
             editor.getSession().setAnnotations([]);
-
             // Clear out old diagram
             diagram_div.html('');
-
             // Draw
             if (nr === 1 || nr === 3 || nr === 4) {
               diagram.drawSVG(diagram_div.get(0));
             } else if (nr === 2) {
-              diagram.drawSVG(diagram_div.get(0), {
-                'flowstate' : {
-                  'past' : { 'fill' : '#CCCCCC', 'font-size' : 12},
-                  'current' : {'fill' : 'yellow', 'font-color' : 'red', 'font-weight' : 'bold'},
-                  'future' : { 'fill' : '#FFFF99'},
-                  'invalid': {'fill' : '#444444'},
-                  'approved' : { 'fill' : '#58C4A3', 'font-size' : 12, 'yes-text' : 'APPROVED', 'no-text' : 'n/a' },
-                  'rejected' : { 'fill' : '#C45879', 'font-size' : 12, 'yes-text' : 'n/a', 'no-text' : 'REJECTED' }
+              diagram.drawSVG(diagram_div.get(0),  {
+                  "x": -10,
+                  "y": -5,
+                  "line-width": 3,
+                  "line-length": 50,
+                  "text-margin": 10,
+                  "font-size": 12,
+                  "font-color": "black",
+                  "line-color": "black",
+                  "element-color": "black",
+                  "fill": "white",
+                  "yes-text": "yes",
+                  "no-text": "no",
+                  "arrow-end": "block",
+                  "scale": 1,
+                  "symbols": {
+                    "start": {
+                      "font-color": "red",
+                      "element-color": "green",
+                      "class": "start-element"
+                    },
+                    "end":{
+                      "font-color": "red",
+                      "element-color": "green",
+                      "class": "end-element"
+                    }
+                  },
+                  "flowstate" : {
+                    "past" : { "fill" : "#CCCCCC", "font-size" : 12},
+                    "current" : {"fill" : "yellow", "font-weight" : "bold"},
+                    "future" : { "fill" : "#58C4A3", "font-weight" : "bold"},
+                    "invalid": {"fill" : "#444444", "font-color" : "white", "font-weight" : "bold"},
+                    "approved" : { "fill" : "#C45879", "font-weight" : "bold", "yes-text" : "DITERIMA", "no-text" : "DITOLAK" },
+                    "rejected" : { "fill" : "#C45879", "font-weight" : "bold", "yes-text" : "LULUS", "no-text" : "TIDAK LULUS" }
+                  }
                 }
-              });
+              );
             }
-
           } catch(err) {
             var annotation = {
               type: "error", // also warning and information
